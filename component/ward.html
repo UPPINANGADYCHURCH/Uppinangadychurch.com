@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../Assets/Images/logo2.png">
+    <title>Ward-Our Lady Virgin of the Poor Church - Uppinangady</title>
+    <link rel="stylesheet" href="../Assets/css/ward.css">
+    <link rel="stylesheet" href="../Assets/css/navbar.css">
+    <link rel="stylesheet" href="../Assets/css/footer.css">
+    <link rel="stylesheet" href="../Assets/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/SplitText.min.js"></script>
+
+    <style>
+        span.one,
+        span.two {
+            width: 100%;
+            height: 3px;
+            background: black;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        /* Loader Overlay */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        /* Circle spinner */
+        .spinner {
+            width: 120px;
+            height: 120px;
+            border: 8px solid #d1d5db;
+            border-top: 8px solid #EBCB90;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Logo in center */
+        .loader img {
+            position: absolute;
+            width: 110px;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        /* Curtain panels */
+        .curtain {
+            position: fixed;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: #fff;
+            z-index: 9998;
+        }
+
+        .curtain.left {
+            left: 0;
+        }
+
+        .curtain.right {
+            right: 0;
+        }
+
+        /* Hide content initially */
+        body.loading .page-content {
+            visibility: hidden;
+        }
+    </style>
+</head>
+
+<body class="loading">
+
+    <!-- Loader -->
+    <div class="loader">
+        <div class="spinner"></div>
+        <img src="../Assets/images/logo.png" alt="Church Logo">
+    </div>
+
+    <!-- Full Page Content -->
+    <div class="page-content">
+        <div id="navbar-container"></div>
+        <h2 class="wards-title">Our Parish Wards</h2>
+
+        <div class="wards-grid" id="wards-container">
+            <!-- Ward cards will be generated dynamically -->
+        </div>
+        <div id="footer-container"></div>
+    </div>
+
+        <script src="../Assets/js/wardsData.js"></script>
+        <script>
+            const wardsContainer = document.getElementById("wards-container");
+
+            // Loop through wards and create cards
+            wards.forEach(ward => {
+                const card = document.createElement("div");
+                card.classList.add("ward-card");
+                card.innerHTML = `
+        <div class="ward-image">
+          <img src="${ward.image}" alt="${ward.name}">
+        </div>
+        <div class="ward-content">
+          <h3>${ward.name}</h3>
+          <p>${ward.description}</p>
+          <p class="gurkar"><strong>Gurkar:</strong> ${ward.gurkar}</p>
+          <a href="wardDetail.html?id=${ward.id}" class="more-btn">Know More</a>
+        </div>
+      `;
+                wardsContainer.appendChild(card);
+            });
+        function runLoader() {
+            const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+            // Loader logo entrance
+            tl.to(".loader img", { duration: 1, scale: 1, opacity: 1 })
+                .to(".loader", { duration: 0.8, opacity: 0, pointerEvents: "none", delay: 0.5 })
+                .call(() => {
+                    document.querySelector(".loader").remove();
+                    document.body.classList.remove("loading");
+                })
+                .to(".curtain.left", { x: "-100%", duration: 1 }, "-=0.2")
+                .to(".curtain.right", { x: "100%", duration: 1 }, "<")
+                .call(() => {
+                    document.querySelectorAll(".curtain").forEach(el => el.remove());
+                });
+        }
+
+        window.addEventListener("load", runLoader);
+    
+        // Accordion toggle
+        document.querySelectorAll(".collapsible-header").forEach(header => {
+            header.addEventListener("click", () => {
+                const parent = header.parentElement;
+                parent.classList.toggle("active");
+            });
+        });
+
+        // Load navbar
+        fetch("navbar.html")
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById("navbar-container").innerHTML = html;
+
+                const script = document.createElement("script");
+                script.src = "../Assets/js/navbar.js";
+                script.onload = () => {
+                    window.initNavbar();
+                };
+                document.body.appendChild(script);
+            });
+        fetch("footer.html")
+			.then(res => res.text())
+			.then(html => document.getElementById("footer-container").innerHTML = html);
+    </script>
+</body>
+
+</html>
